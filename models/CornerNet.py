@@ -7,7 +7,7 @@ from .py_utils import TopPool, BottomPool, LeftPool, RightPool
 class pool(nn.Module):
     def __init__(self, dim, pool1, pool2):
         super(pool, self).__init__()
-        self.p1_conv1 = convolution(3, dim, 128)
+        self.p1_conv1 = convolution(3, dim, 128) #卷积核3,input_dim = dim,output_dim = 128,stride = 1
         self.p2_conv1 = convolution(3, dim, 128)
 
         self.p_conv1 = nn.Conv2d(128, dim, (3, 3), padding=(1, 1), bias=False)
@@ -60,8 +60,9 @@ def make_pool_layer(dim):
     return nn.Sequential()
 
 def make_hg_layer(kernel, dim0, dim1, mod, layer=convolution, **kwargs):
-    layers  = [layer(kernel, dim0, dim1, stride=2)]
-    layers += [layer(kernel, dim1, dim1) for _ in range(mod - 1)]
+    #2个hourglass这一次各部分的Hourglass
+    layers  = [layer(kernel, dim0, dim1, stride=2)]#下采样，5次卷积，输出(256, 384, 384, 384, 512)
+    layers += [layer(kernel, dim1, dim1) for _ in range(mod - 1)]#上采样
     return nn.Sequential(*layers)
 
 class model(kp):
@@ -76,7 +77,7 @@ class model(kp):
             make_tl_layer=make_tl_layer,
             make_br_layer=make_br_layer,
             make_pool_layer=make_pool_layer,
-            make_hg_layer=make_hg_layer,
+            make_hg_layer=make_hg_layer,#backbone hourglass network
             kp_layer=residual, cnv_dim=256
         )
 
